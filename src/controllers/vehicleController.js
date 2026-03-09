@@ -73,6 +73,39 @@ const getModels = async (req, res) => {
 
 };
 
+const getModelById = async (req, res) => {
+
+    try {
+
+        const modelId = req.params.id;
+
+        const model = await Vehicle.getModelById(modelId);
+
+        if (!model) {
+            return res.status(404).json({
+                success: false,
+                message: "Model not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: model
+        });
+
+    } catch (error) {
+
+        console.error("Get model error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+
+    }
+
+};
+
 const getVariants = async (req, res) => {
 
     try {
@@ -103,6 +136,39 @@ const getVariants = async (req, res) => {
     } catch (error) {
 
         console.error("Vehicle variant error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+
+    }
+
+};
+
+const getVariantById = async (req, res) => {
+
+    try {
+
+        const variantId = req.params.id;
+
+        const variant = await Vehicle.getVariantById(variantId);
+
+        if (!variant) {
+            return res.status(404).json({
+                success: false,
+                message: "Variant not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: variant
+        });
+
+    } catch (error) {
+
+        console.error("Get variant error:", error);
 
         res.status(500).json({
             success: false,
@@ -159,5 +225,7 @@ module.exports = {
     getBrands,
     getModels,
     getVariants,
-    getYears
+    getYears,
+    getModelById,
+    getVariantById
 }

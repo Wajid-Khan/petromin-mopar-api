@@ -104,6 +104,28 @@ class Vehicle {
         };
     }
 
+    static async getModelById(modelId) {
+
+        const query = `
+            SELECT
+                vm.model_id,
+                vm.model_name_en,
+                vm.model_name_ar,
+                vm.model_image,
+                vm.brand_id,
+                vb.brand_name_en,
+                vb.brand_name_ar
+            FROM vehicle_model vm
+            LEFT JOIN vehicle_brand vb
+                ON vm.brand_id = vb.brand_id
+            WHERE vm.model_id = $1
+        `;
+
+        const result = await pool.query(query, [modelId]);
+
+        return result.rows[0];
+    }
+
     static async getVariants({ search = "", brandId = "", modelId = "", page = 1, pageSize = 10 }) {
 
         const offset = (page - 1) * pageSize;
@@ -163,6 +185,38 @@ class Vehicle {
             page,
             pageSize
         };
+    }
+
+    static async getVariantById(variantId) {
+
+        const query = `
+            SELECT
+                vv.variant_id,
+                vv.variant_name_en,
+                vv.variant_name_ar,
+
+                vv.model_id,
+                vm.model_name_en,
+                vm.model_name_ar,
+
+                vv.brand_id,
+                vb.brand_name_en,
+                vb.brand_name_ar
+
+            FROM vehicle_variant vv
+
+            LEFT JOIN vehicle_model vm
+                ON vv.model_id = vm.model_id
+
+            LEFT JOIN vehicle_brand vb
+                ON vv.brand_id = vb.brand_id
+
+            WHERE vv.variant_id = $1
+        `;
+
+        const result = await pool.query(query, [variantId]);
+
+        return result.rows[0];
     }
 
     static async getYears({ search = "", brandId = "", modelId = "", variantId = "", page = 1, pageSize = 10 }) {
