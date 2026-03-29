@@ -7,6 +7,7 @@ const path = require("path");
 const contactRoutes = require("./src/routes/contactRoutes");
 const vehicleRoutes = require("./src/routes/vehicleRoutes");
 const lookupRoutes = require("./src/routes/lookupRoutes");
+const authRoutes = require("./src/routes/authRoutes");
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+
+app.use("/api/auth", authRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/vehicle", vehicleRoutes);
 app.use("/api/lookup", lookupRoutes);
