@@ -8,6 +8,7 @@ const contactRoutes = require("./src/routes/contactRoutes");
 const vehicleRoutes = require("./src/routes/vehicleRoutes");
 const lookupRoutes = require("./src/routes/lookupRoutes");
 const authRoutes = require("./src/routes/authRoutes");
+const userRoutes = require("./src/routes/userRoutes.js");
 
 const app = express();
 
@@ -21,13 +22,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/vehicle", vehicleRoutes);
 app.use("/api/lookup", lookupRoutes);
+app.use("/api/user", userRoutes);
 
 app.get('/', (req, res) => {
   res.send('Petromin Mopar API is running 🚀');
 });
 
-const PORT = process.env.PORT || 3006;
+const PORT = process.env.PORT || 3007;
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log('Petromin Mopar API running on port 3006');
+    console.log('Petromin Mopar API running on port 3007');
 });
