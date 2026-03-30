@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
   res.send('Petromin Mopar API is running 🚀');
 });
 
-const PORT = process.env.PORT || 3007;
+const PORT = process.env.PORT || 3006;
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Petromin Mopar API running on port 3006');
