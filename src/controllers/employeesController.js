@@ -1,0 +1,124 @@
+const { v4: uuidv4 } = require("uuid");
+const Employees = require("../models/Employees");
+
+// 🔹 Get all
+const getEmployees = async (req, res) => {
+
+    try {
+
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+
+        const result = await Employees.getAll({ page, pageSize });
+
+        res.json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+
+        console.error("Get employees error:", error);
+
+        res.status(500).json({ success: false });
+    }
+};
+
+
+// 🔹 Get by ID
+const getEmployeeById = async (req, res) => {
+
+    try {
+
+        const employee = await Employees.getById(req.params.id);
+
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "Employee not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: employee
+        });
+
+    } catch (error) {
+
+        res.status(500).json({ success: false });
+    }
+};
+
+
+// 🔹 Create
+const createEmployee = async (req, res) => {
+
+    try {
+
+        const employee = await Employees.create({
+            emp_id: uuidv4(),
+            ...req.body
+        });
+
+        res.json({
+            success: true,
+            message: "Employee created",
+            data: employee
+        });
+
+    } catch (error) {
+
+        console.error("Create employee error:", error);
+
+        res.status(500).json({ success: false });
+    }
+};
+
+
+// 🔹 Update
+const updateEmployee = async (req, res) => {
+
+    try {
+
+        const employee = await Employees.update(req.params.id, req.body);
+
+        res.json({
+            success: true,
+            message: "Employee updated",
+            data: employee
+        });
+
+    } catch (error) {
+
+        res.status(500).json({ success: false });
+    }
+};
+
+
+// 🔹 Delete
+const deleteEmployee = async (req, res) => {
+
+    try {
+
+        const employee = await Employees.delete(req.params.id);
+
+        res.json({
+            success: true,
+            message: "Employee deleted",
+            data: employee
+        });
+
+    } catch (error) {
+
+        res.status(500).json({ success: false });
+    }
+};
+
+module.exports = {
+    getEmployees,
+    getEmployeeById,
+    createEmployee,
+    updateEmployee,
+    deleteEmployee
+};
