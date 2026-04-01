@@ -3,10 +3,38 @@ const pool = require("../../db");
 class Employees {
 
     // 🔹 Get all employees (with role)
-    static async getAll({ page = 1, pageSize = 10 }) {
+    static async getAll({ page = 1, pageSize = 10, search = "", role_id = null }) {
 
         const offset = (page - 1) * pageSize;
 
+        let conditions = [];
+        let values = [];
+        let index = 1;
+
+        // Base conditions
+        conditions.push(`e.is_deleted = false`);
+        conditions.push(`e.role_id::integer != 1`);
+
+        // 🔍 Search (name OR email)
+        if (search) {
+            conditions.push(`(
+                LOWER(e.name) LIKE LOWER($${index})
+                OR LOWER(e.email) LIKE LOWER($${index})
+            )`);
+            values.push(`%${search}%`);
+            index++;
+        }
+
+        // 🎯 Filter by role_id
+        if (role_id) {
+            conditions.push(`e.role_id::integer = $${index}`);
+            values.push(role_id);
+            index++;
+        }
+
+        const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+        // 🔹 Main Query
         const query = `
             SELECT 
                 e.emp_id,
@@ -19,24 +47,24 @@ class Employees {
                 r.role_name
             FROM employees e
             LEFT JOIN roles r ON e.role_id::integer = r.role_id
-            WHERE 
-                e.is_deleted = false
-                AND e.role_id != 1
+            ${whereClause}
             ORDER BY e.created_at DESC
-            LIMIT $1 OFFSET $2
+            LIMIT $${index} OFFSET $${index + 1}
         `;
 
-        const result = await pool.query(query, [pageSize, offset]);
+        values.push(pageSize, offset);
 
+        const result = await pool.query(query, values);
+
+        // 🔹 Count Query
         const countQuery = `
             SELECT COUNT(*) 
-            FROM employees
-            WHERE 
-                is_deleted = false
-                AND role_id != 1
+            FROM employees e
+            ${whereClause}
         `;
 
-        const count = await pool.query(countQuery);
+        const countValues = values.slice(0, values.length - 2);
+        const count = await pool.query(countQuery, countValues);
 
         return {
             data: result.rows,

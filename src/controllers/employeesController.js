@@ -8,8 +8,15 @@ const getEmployees = async (req, res) => {
 
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
+        const search = req.query.search || "";
+        const role_id = req.query.role_id || null;
 
-        const result = await Employees.getAll({ page, pageSize });
+        const result = await Employees.getAll({
+            page,
+            pageSize,
+            search,
+            role_id
+        });
 
         res.json({
             success: true,
