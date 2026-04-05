@@ -91,33 +91,35 @@ class Employees {
     }
 
     // 🔹 Create
+    // 🔹 Create
     static async create(data) {
 
         const query = `
-            INSERT INTO employees (
-                emp_id,
-                name,
-                email,
-                password,
-                role_id,
-                username,
-                created_at,
-                is_active,
-                is_deleted
-            )
-            VALUES ($1,$2,$3,$4,$5,$6,NOW(),true,false)
-            RETURNING *
-        `;
+        INSERT INTO employees (
+            emp_id,
+            name,
+            email,
+            password,
+            role_id,
+            username,
+            created_by,   -- ✅ ADD THIS
+            created_at,
+            is_active,
+            is_deleted
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),true,false)
+        RETURNING *
+    `;
 
         const values = [
             data.emp_id,
             data.name,
             data.email,
             data.password,
-            data.role_id,
-            data.username
+            Number(data.role_id),      // ✅ convert
+            data.username,
+            data.created_by || null    // ✅ SAFE FIX
         ];
-
         const result = await pool.query(query, values);
         return result.rows[0];
     }

@@ -60,8 +60,9 @@ const getEmployeeById = async (req, res) => {
 
 // 🔹 Create
 const createEmployee = async (req, res) => {
-
     try {
+
+        console.log("BODY:", req.body); // 👈 DEBUG
 
         const employee = await Employees.create({
             emp_id: uuidv4(),
@@ -76,9 +77,12 @@ const createEmployee = async (req, res) => {
 
     } catch (error) {
 
-        console.error("Create employee error:", error);
+        console.error("🔥 Create employee error:", error);
 
-        res.status(500).json({ success: false });
+        res.status(500).json({
+            success: false,
+            message: error.message   // ✅ THIS LINE VERY IMPORTANT
+        });
     }
 };
 
