@@ -168,6 +168,21 @@ class Employees {
         return result.rows[0];
     }
 
+    static async updatePasswordByEmail(email, password) {
+
+        const query = `
+            UPDATE employees
+            SET password = $1,
+                updated_at = NOW()
+            WHERE email = $2
+            RETURNING emp_id, email
+        `;
+
+        const result = await pool.query(query, [password, email]);
+
+        return result.rows[0];
+    }
+
 }
 
 module.exports = Employees;

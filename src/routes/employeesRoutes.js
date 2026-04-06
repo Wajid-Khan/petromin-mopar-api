@@ -8,5 +8,6 @@ router.get("/getEmployee/:id", controller.getEmployeeById);
 router.post("/createEmployee", controller.createEmployee);
 router.put("/updateEmployee/:id", controller.updateEmployee);
 router.delete("/deleteEmployee/:id", controller.deleteEmployee);
+router.put("/updatePassword", controller.updatePasswordByEmail);
 
 module.exports = router;

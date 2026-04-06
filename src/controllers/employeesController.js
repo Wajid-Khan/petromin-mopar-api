@@ -126,10 +126,48 @@ const deleteEmployee = async (req, res) => {
     }
 };
 
+const updatePasswordByEmail = async (req, res) => {
+
+    try {
+
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required"
+            });
+        }
+
+        const employee = await Employees.updatePasswordByEmail(email, password);
+
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "Employee not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Password updated successfully"
+        });
+
+    } catch (error) {
+
+        console.error("Update password error:", error);
+
+        res.status(500).json({
+            success: false
+        });
+    }
+};
+
 module.exports = {
     getEmployees,
     getEmployeeById,
     createEmployee,
     updateEmployee,
-    deleteEmployee
+    deleteEmployee,
+    updatePasswordByEmail
 };
