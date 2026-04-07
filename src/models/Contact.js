@@ -71,6 +71,30 @@ class Contact {
         const result = await pool.query(query, [id]);
         return result.rows[0];
     }
+
+    static async updateResponse(data) {
+
+        const query = `
+            UPDATE contact_form_enquiries
+            SET
+                responded_at = $1,
+                responded_by = $2,
+                respondent_comment = $3
+            WHERE contact_id = $4
+            RETURNING *
+        `;
+
+        const values = [
+            data.responded_at,
+            data.responded_by,
+            data.respondent_comment,
+            data.contact_id
+        ];
+
+        const result = await pool.query(query, values);
+
+        return result.rows[0];
+    }
 }
 
 module.exports = Contact;

@@ -23,18 +23,6 @@ const createContact = async (req, res) => {
 
         const savedContact = await Contact.create(contactData);
 
-        // Email content
-        // const html = `
-        //     <h3>New Contact Inquiry</h3>
-        //     <p><b>Name:</b> ${name}</p>
-        //     <p><b>Email:</b> ${email}</p>
-        //     <p><b>Phone:</b> ${phone}</p>
-        //     <p><b>Subject:</b> ${subject}</p>
-        //     <p><b>Message:</b> ${message}</p>
-        // `;
-
-        // await sendMail("New Contact Inquiry", html);
-
         res.status(201).json({
             success: true,
             message: "Contact inquiry submitted successfully",
@@ -112,8 +100,58 @@ const getContactById = async (req, res) => {
     }
 
 };
+
+const updateContactResponse = async (req, res) => {
+
+    try {
+
+        const {
+            contact_id,
+            responded_by,
+            respondent_comment
+        } = req.body;
+
+        if (!contact_id || !responded_by) {
+            return res.status(400).json({
+                success: false,
+                message: "contact_id and responded_by are required"
+            });
+        }
+
+        const updated = await Contact.updateResponse({
+            contact_id,
+            responded_by,
+            respondent_comment: respondent_comment || null,
+            responded_at: moment().format("YYYY-MM-DD HH:mm:ss")
+        });
+
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: "Contact not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Response updated successfully",
+            data: updated
+        });
+
+    } catch (error) {
+
+        console.error("Update contact response error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 module.exports = {
     createContact,
     getAllContacts,
-    getContactById
+    getContactById,
+    updateContactResponse
 };
