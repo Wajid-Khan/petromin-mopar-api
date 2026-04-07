@@ -65,7 +65,7 @@ class Contact {
         const query = `
             SELECT *
             FROM contact_form_enquiries
-            WHERE id = $1
+            WHERE contact_id = $1
         `;
 
         const result = await pool.query(query, [id]);
