@@ -35,16 +35,42 @@ class Contact {
 
         return result.rows[0];
     }
+    static async getAll({ page = 1, pageSize = 10 }) {
 
-    static async getAll() {
+        const offset = (page - 1) * pageSize;
 
-        const result = await pool.query(
-            `SELECT * FROM contact_form_enquiries ORDER BY created_at DESC`
-        );
+        const query = `
+            SELECT *
+            FROM contact_form_enquiries
+            ORDER BY created_at DESC
+            LIMIT $1 OFFSET $2
+        `;
 
-        return result.rows;
+        const result = await pool.query(query, [pageSize, offset]);
+
+        const countResult = await pool.query(`
+            SELECT COUNT(*) FROM contact_form_enquiries
+        `);
+
+        return {
+            data: result.rows,
+            total: parseInt(countResult.rows[0].count),
+            page,
+            pageSize
+        };
     }
 
+    static async getById(id) {
+
+        const query = `
+            SELECT *
+            FROM contact_form_enquiries
+            WHERE id = $1
+        `;
+
+        const result = await pool.query(query, [id]);
+        return result.rows[0];
+    }
 }
 
 module.exports = Contact;
