@@ -79,14 +79,36 @@ const createCustomerWhileBooking = async (req, res) => {
 };
 
 // Get all customers
-const getCustomers = async (req, res) => {
+// const getCustomers = async (req, res) => {
+//     try {
+//         const page = parseInt(req.query.page) || 1;
+//         const pageSize = parseInt(req.query.pageSize) || 10;
 
+//         const result = await Customer.getAll({ page, pageSize });
+
+//         res.json({
+//             success: true,
+//             ...result
+//         });
+
+//     } catch (error) {
+
+//         console.error("Get customers error:", error);
+
+//         res.status(500).json({
+//             success: false
+//         });
+
+//     }
+// };
+const getCustomers = async (req, res) => {
     try {
 
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
+        const search = req.query.search || "";
 
-        const result = await Customer.getAll({ page, pageSize });
+        const result = await Customer.getAll({ page, pageSize, search });
 
         res.json({
             success: true,
@@ -102,7 +124,6 @@ const getCustomers = async (req, res) => {
         });
 
     }
-
 };
 
 

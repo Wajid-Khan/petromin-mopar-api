@@ -71,23 +71,78 @@ class Customer {
     }
 
     // Get all customers
-    static async getAll({ page = 1, pageSize = 10 }) {
+    // static async getAll({ page = 1, pageSize = 10 }) {
+
+    //     const offset = (page - 1) * pageSize;
+
+    //     const query = `
+    //         SELECT *
+    //         FROM customers
+    //         WHERE is_deleted = false
+    //         ORDER BY created_at DESC
+    //         LIMIT $1 OFFSET $2
+    //     `;
+
+    //     const result = await pool.query(query, [pageSize, offset]);
+
+    //     const countResult = await pool.query(`
+    //         SELECT COUNT(*) FROM customers WHERE is_deleted = false
+    //     `);
+
+    //     return {
+    //         data: result.rows,
+    //         total: parseInt(countResult.rows[0].count),
+    //         page,
+    //         pageSize
+    //     };
+    // }
+    static async getAll({ page = 1, pageSize = 10, search = "" }) {
 
         const offset = (page - 1) * pageSize;
 
+        let conditions = [];
+        let values = [];
+        let index = 1;
+
+        // Base condition
+        conditions.push(`is_deleted = false`);
+
+        // 🔍 Search condition
+        if (search) {
+            conditions.push(`(
+                LOWER(first_name) LIKE LOWER($${index})
+                OR LOWER(last_name) LIKE LOWER($${index})
+                OR LOWER(email) LIKE LOWER($${index})
+                OR mobile LIKE $${index}
+            )`);
+            values.push(`%${search}%`);
+            index++;
+        }
+
+        const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+        // 🔹 Main Query
         const query = `
             SELECT *
             FROM customers
-            WHERE is_deleted = false
+            ${whereClause}
             ORDER BY created_at DESC
-            LIMIT $1 OFFSET $2
+            LIMIT $${index} OFFSET $${index + 1}
         `;
 
-        const result = await pool.query(query, [pageSize, offset]);
+        values.push(pageSize, offset);
 
-        const countResult = await pool.query(`
-            SELECT COUNT(*) FROM customers WHERE is_deleted = false
-        `);
+        const result = await pool.query(query, values);
+
+        // 🔹 Count Query
+        const countQuery = `
+            SELECT COUNT(*)
+            FROM customers
+            ${whereClause}
+        `;
+
+        const countValues = values.slice(0, values.length - 2);
+        const countResult = await pool.query(countQuery, countValues);
 
         return {
             data: result.rows,
