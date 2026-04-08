@@ -44,13 +44,13 @@ const createContact = async (req, res) => {
 
 
 const getAllContacts = async (req, res) => {
-
     try {
 
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
+        const search = req.query.search || "";
 
-        const result = await Contact.getAll({ page, pageSize });
+        const result = await Contact.getAll({ page, pageSize, search });
 
         res.json({
             success: true,
@@ -66,7 +66,6 @@ const getAllContacts = async (req, res) => {
         });
 
     }
-
 };
 
 const getContactById = async (req, res) => {

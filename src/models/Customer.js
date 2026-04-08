@@ -36,6 +36,40 @@ class Customer {
         return result.rows[0];
     }
 
+    // Create customer
+    static async createCustomerWhileBooking(data) {
+
+        const query = `
+            INSERT INTO customers (
+                id,
+                first_name,
+                last_name,
+                email,
+                mobile,
+                gender,
+                channel,
+                created_at,
+                is_active,
+                is_deleted
+            )
+            VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),false,false)
+            RETURNING *
+        `;
+
+        const values = [
+            data.id,
+            data.first_name,
+            data.last_name,
+            data.email,
+            data.mobile,
+            data.gender,
+            data.channel
+        ];
+
+        const result = await pool.query(query, values);
+        return result.rows[0];
+    }
+
     // Get all customers
     static async getAll({ page = 1, pageSize = 10 }) {
 
@@ -137,6 +171,49 @@ class Customer {
         `;
 
         const result = await pool.query(query, [id]);
+        return result.rows[0];
+    }
+
+    static async addCustomerCar(data) {
+
+        const query = `
+            INSERT INTO customer_car (
+                id,
+                customer_id,
+                model_id,
+                brand_id,
+                variant_id,
+                year_id,
+                vehicle_number_plate,
+                vin,
+                created_at,
+                created_by,
+                is_active,
+                is_deleted
+            )
+            VALUES (
+                $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
+            )
+            RETURNING *
+        `;
+
+        const values = [
+            data.id,
+            data.customer_id,
+            data.model_id,
+            data.brand_id,
+            data.variant_id,
+            data.year_id,
+            data.vehicle_number_plate,
+            data.vin,
+            data.created_at,
+            data.created_by,
+            true,
+            false
+        ];
+
+        const result = await pool.query(query, values);
+
         return result.rows[0];
     }
 

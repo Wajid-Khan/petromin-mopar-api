@@ -35,22 +35,75 @@ class Contact {
 
         return result.rows[0];
     }
-    static async getAll({ page = 1, pageSize = 10 }) {
+    // static async getAll({ page = 1, pageSize = 10 }) {
+
+    //     const offset = (page - 1) * pageSize;
+
+    //     const query = `
+    //         SELECT *
+    //         FROM contact_form_enquiries
+    //         ORDER BY created_at DESC
+    //         LIMIT $1 OFFSET $2
+    //     `;
+
+    //     const result = await pool.query(query, [pageSize, offset]);
+
+    //     const countResult = await pool.query(`
+    //         SELECT COUNT(*) FROM contact_form_enquiries
+    //     `);
+
+    //     return {
+    //         data: result.rows,
+    //         total: parseInt(countResult.rows[0].count),
+    //         page,
+    //         pageSize
+    //     };
+    // }
+    static async getAll({ page = 1, pageSize = 10, search = "" }) {
 
         const offset = (page - 1) * pageSize;
 
+        let values = [];
+        let conditions = [];
+        let index = 1;
+
+        // 🔍 Search condition
+        if (search) {
+            conditions.push(`(
+                LOWER(name) LIKE LOWER($${index})
+                OR LOWER(email) LIKE LOWER($${index})
+                OR phone LIKE $${index}
+            )`);
+            values.push(`%${search}%`);
+            index++;
+        }
+
+        const whereClause = conditions.length
+            ? `WHERE ${conditions.join(" AND ")}`
+            : "";
+
+        // 🔹 Main Query
         const query = `
             SELECT *
             FROM contact_form_enquiries
+            ${whereClause}
             ORDER BY created_at DESC
-            LIMIT $1 OFFSET $2
+            LIMIT $${index} OFFSET $${index + 1}
         `;
 
-        const result = await pool.query(query, [pageSize, offset]);
+        values.push(pageSize, offset);
 
-        const countResult = await pool.query(`
-            SELECT COUNT(*) FROM contact_form_enquiries
-        `);
+        const result = await pool.query(query, values);
+
+        // 🔹 Count Query
+        const countQuery = `
+            SELECT COUNT(*) 
+            FROM contact_form_enquiries
+            ${whereClause}
+        `;
+
+        const countValues = values.slice(0, values.length - 2);
+        const countResult = await pool.query(countQuery, countValues);
 
         return {
             data: result.rows,

@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
 const Customer = require("../models/Customer");
+const Auth = require("../models/Auth");
 
 // Create customer
 const createCustomer = async (req, res) => {
@@ -31,7 +32,51 @@ const createCustomer = async (req, res) => {
 
 };
 
+// Generate OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
 
+// Create customer
+const createCustomerWhileBooking = async (req, res) => {
+
+    try {
+
+        const data = {
+            id: uuidv4(),
+            ...req.body
+        };
+
+        const customer = await Customer.createCustomerWhileBooking(data);
+        const otp = generateOTP();
+        const otp_type = "customer_booking";
+        await Auth.createOTP({
+            cor_id: uuidv4(),
+            otp_type,
+            otp_request: req.body.mobile,
+            otp_code: otp,
+            otp_generated_at: new Date(),
+            otp_sent_at: new Date()
+        });
+
+        // send otp either via SMS or email based on input type (mobile or email)
+
+        res.json({
+            success: true,
+            message: "Customer created but not verified, enter OTP to verify",
+            otp: otp,
+            data: customer
+        });
+
+    } catch (error) {
+
+        console.error("Create customer error:", error);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+};
 
 // Get all customers
 const getCustomers = async (req, res) => {
@@ -59,7 +104,6 @@ const getCustomers = async (req, res) => {
     }
 
 };
-
 
 
 // Get customer by ID
@@ -96,7 +140,6 @@ const getCustomerById = async (req, res) => {
 };
 
 
-
 // Get customer with cars
 const getCustomerWithCars = async (req, res) => {
 
@@ -122,7 +165,6 @@ const getCustomerWithCars = async (req, res) => {
     }
 
 };
-
 
 
 // Update customer
@@ -152,8 +194,6 @@ const updateCustomer = async (req, res) => {
 
 };
 
-
-
 // Delete customer
 const deleteCustomer = async (req, res) => {
 
@@ -181,6 +221,59 @@ const deleteCustomer = async (req, res) => {
 
 };
 
+const addCustomerCar = async (req, res) => {
+
+    try {
+
+        const {
+            customer_id,
+            model_id,
+            brand_id,
+            variant_id,
+            year_id,
+            vehicle_number_plate,
+            vin,
+            created_by
+        } = req.body;
+
+        // ✅ Validation
+        if (!customer_id || !model_id || !brand_id) {
+            return res.status(400).json({
+                success: false,
+                message: "customer_id, model_id, brand_id are required"
+            });
+        }
+
+        const newCar = await Customer.addCustomerCar({
+            id: uuidv4(),
+            customer_id,
+            model_id,
+            brand_id,
+            variant_id: variant_id || null,
+            year_id: year_id || null,
+            vehicle_number_plate: vehicle_number_plate || null,
+            vin: vin || null,
+            created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+            created_by: created_by || null
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Customer car added successfully",
+            data: newCar
+        });
+
+    } catch (error) {
+
+        console.error("Add customer car error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 
 module.exports = {
     createCustomer,
@@ -188,5 +281,7 @@ module.exports = {
     getCustomerById,
     getCustomerWithCars,
     updateCustomer,
-    deleteCustomer
+    deleteCustomer,
+    addCustomerCar,
+    createCustomerWhileBooking
 };

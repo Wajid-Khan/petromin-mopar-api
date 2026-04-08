@@ -88,10 +88,48 @@ const resendOTP = async (req, res) => {
 
 
  // 4️⃣ Verify OTP
+// const verifyOTPHandler = async (req, res) => {
+//     try {
+
+//         const { input, otp } = req.body;
+
+//         const latest = await Auth.getLatestOTP(input);
+
+//         if (!latest) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "OTP not found"
+//             });
+//         }
+
+//         // ⚠️ Add OTP validation logic here
+
+//         await Auth.verifyOTP(latest.cor_id);
+
+//         const user = await Auth.findCustomer(input);
+
+//         res.json({
+//             success: true,
+//             message: "OTP verified",
+//             user
+//         });
+
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ success: false });
+//     }
+// };
 const verifyOTPHandler = async (req, res) => {
     try {
 
         const { input, otp } = req.body;
+
+        if (!input || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Input and OTP are required"
+            });
+        }
 
         const latest = await Auth.getLatestOTP(input);
 
@@ -102,15 +140,43 @@ const verifyOTPHandler = async (req, res) => {
             });
         }
 
-        // ⚠️ Add OTP validation logic here
+        // ✅ 1. Check OTP match
+        if (latest.otp_code != otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            });
+        }
 
+        // ✅ 2. Check OTP already used
+        if (latest.otp_verified_at) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP already used"
+            });
+        }
+
+        // ✅ 3. Check OTP expiry (5 mins example)
+        const now = new Date();
+        const generatedTime = new Date(latest.otp_generated_at);
+        const diff = (now - generatedTime) / 1000; // seconds
+
+        if (diff > 300) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired"
+            });
+        }
+
+        // ✅ 4. Mark as verified
         await Auth.verifyOTP(latest.cor_id);
 
+        // ✅ 5. Get user
         const user = await Auth.findCustomer(input);
 
         res.json({
             success: true,
-            message: "OTP verified",
+            message: "OTP verified successfully",
             user
         });
 
