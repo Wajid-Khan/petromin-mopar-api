@@ -42,7 +42,8 @@ const requestOTP = async (req, res) => {
             otp_type,
             otp_request: input,
             otp_generated_at: new Date(),
-            otp_sent_at: new Date()
+            otp_sent_at: new Date(),
+            otp_code: otp, // ✅ REQUIRED
         });
 
         res.json({
@@ -64,12 +65,14 @@ const resendOTP = async (req, res) => {
 
         const { input } = req.body;
 
-        const otp = generateOTP();
+        // const otp = generateOTP();
+        const otp = 123456; // for testing
 
         await Auth.createOTP({
             cor_id: uuidv4(),
             otp_type: "resend",
             otp_request: input,
+            otp_code: otp, // ✅ REQUIRED
             otp_generated_at: new Date(),
             otp_sent_at: new Date()
         });
@@ -132,7 +135,7 @@ const verifyOTPHandler = async (req, res) => {
         }
 
         const latest = await Auth.getLatestOTP(input);
-
+   
         if (!latest) {
             return res.status(400).json({
                 success: false,
@@ -166,14 +169,13 @@ const verifyOTPHandler = async (req, res) => {
                 success: false,
                 message: "OTP expired"
             });
-        }
+        }   
 
         // ✅ 4. Mark as verified
         await Auth.verifyOTP(latest.cor_id);
 
         // ✅ 5. Get user
-        const user = await Auth.findCustomer(input);
-
+        const user = await Auth.findCustomerByMobile(input);
         res.json({
             success: true,
             message: "OTP verified successfully",
@@ -222,10 +224,74 @@ const register = async (req, res) => {
     }
 };
 
+const checkUserAndSendOTP = async (req, res) => {
+    try {
+
+        const { input, otp_type } = req.body;
+
+        if (!input) {
+            return res.status(400).json({
+                success: false,
+                message: "Input is required"
+            });
+        }
+
+        const normalizedInput = input.trim();
+
+        // 🔍 Check user
+        const user = await Auth.findCustomer(normalizedInput);
+
+        // ❌ If user not found → STOP here
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Mobile number not registered with us"
+            });
+        }
+
+        // 🔢 Generate OTP (only for existing user)
+        // const otp = generateOTP();
+        const otp = 123456; // for testing
+
+        // 💾 Save OTP
+        await Auth.createOTP({
+            cor_id: uuidv4(),
+            otp_type: otp_type || "login",
+            otp_request: normalizedInput,
+            otp_code: otp,
+            otp_generated_at: new Date(),
+            otp_sent_at: new Date()
+        });
+
+        // 📤 Send OTP (integrate SMS/email here)
+        // await sendSMS(normalizedInput, otp);
+
+        res.json({
+            success: true,
+            message: "OTP sent successfully",
+            isExistingUser: true,
+            type: detectType(normalizedInput),
+
+            // ❌ REMOVE IN PRODUCTION
+            otp
+        });
+
+    } catch (err) {
+
+        console.error("checkUserAndSendOTP error:", err);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 module.exports = {
     checkUser,
     requestOTP,
     resendOTP,
     verifyOTP: verifyOTPHandler,
-    register
+    register,
+    checkUserAndSendOTP
 };

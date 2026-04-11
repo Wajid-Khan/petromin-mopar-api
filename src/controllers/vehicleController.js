@@ -189,7 +189,7 @@ const getYears = async (req, res) => {
         const variantId = req.query.variantId || "";
 
         const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.pageSize) || 10;
+        const pageSize = parseInt(req.query.pageSize) || 100;
 
         const result = await Vehicle.getYears({
             search,
@@ -221,11 +221,51 @@ const getYears = async (req, res) => {
 
 };
 
+// ✅ GET CONCERNS
+const getConcerns = async (req, res) => {
+    try {
+        const data = await Vehicle.getConcerns();
+
+        res.json({
+            success: true,
+            data
+        });
+
+    } catch (error) {
+        console.error("Concern error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+// ✅ GET SERVICES
+const getServices = async (req, res) => {
+    try {
+        const data = await Vehicle.getServices();
+
+        res.json({
+            success: true,
+            data
+        });
+
+    } catch (error) {
+        console.error("Service error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 module.exports = {
     getBrands,
     getModels,
     getVariants,
     getYears,
     getModelById,
-    getVariantById
+    getVariantById,
+    getConcerns,
+    getServices
 }

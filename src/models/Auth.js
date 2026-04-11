@@ -12,12 +12,22 @@ class Auth {
         return result.rows[0];
     }
 
+    // Check customer by mobile
+    static async findCustomerByMobile(input) {
+        const query = `
+            SELECT * FROM customers
+            WHERE mobile = $1
+        `;
+        const result = await pool.query(query, [input]);
+        return result.rows[0];
+    }
+
     // Create OTP
     static async createOTP(data) {
         const query = `
             INSERT INTO customer_otp_request
-            (cor_id, otp_type, otp_request, otp_generated_at, otp_sent_at)
-            VALUES ($1,$2,$3,$4,$5)
+            (cor_id, otp_type, otp_request, otp_generated_at, otp_sent_at, otp_code)
+            VALUES ($1,$2,$3,$4,$5,$6)
             RETURNING *
         `;
         const result = await pool.query(query, [
@@ -25,7 +35,8 @@ class Auth {
             data.otp_type,
             data.otp_request,
             data.otp_generated_at,
-            data.otp_sent_at
+            data.otp_sent_at,
+            data.otp_code
         ]);
         return result.rows[0];
     }

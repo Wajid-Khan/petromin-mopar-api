@@ -295,6 +295,26 @@ const addCustomerCar = async (req, res) => {
     }
 };
 
+const getCustomerCars = async (req, res) => {
+    try {
+        const { customerId } = req.params;
+
+        const cars = await Customer.getCustomerCars(customerId);
+
+        res.json({
+            success: true,
+            data: cars
+        });
+
+    } catch (err) {
+        console.error("getCustomerCars error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 
 module.exports = {
     createCustomer,
@@ -304,5 +324,6 @@ module.exports = {
     updateCustomer,
     deleteCustomer,
     addCustomerCar,
-    createCustomerWhileBooking
+    createCustomerWhileBooking,
+    getCustomerCars
 };

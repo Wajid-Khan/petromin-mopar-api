@@ -285,6 +285,36 @@ class Vehicle {
         };
     }
 
+    // ✅ GET CONCERNS
+    static async getConcerns() {
+        const query = `
+            SELECT 
+                concern_id,
+                concern_name_en,
+                concern_name_ar
+            FROM lookup_vehicle_concerns
+            ORDER BY concern_name_en ASC
+        `;
+
+        const result = await pool.query(query);
+        return result.rows;
+    }
+
+    // ✅ GET SERVICES
+    static async getServices() {
+        const query = `
+            SELECT 
+                service_id,
+                service_name_en,
+                service_name_ar
+            FROM lookup_vehicle_services
+            ORDER BY service_name_en ASC
+        `;
+
+        const result = await pool.query(query);
+        return result.rows;
+    }
+
 }
 
 module.exports = Vehicle;

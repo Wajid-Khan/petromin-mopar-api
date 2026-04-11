@@ -8,6 +8,7 @@ router.post("/createCustomersWhileBooking", customerController.createCustomerWhi
 router.get("/getCustomers", customerController.getCustomers);
 router.get("/getCustomers/:id", customerController.getCustomerById);
 router.get("/getCustomerWithCar/:id/cars", customerController.getCustomerWithCars);
+router.get("/customer-car/:customerId", customerController.getCustomerCars);
 router.put("/updateCustomer/:id", customerController.updateCustomer);
 router.delete("/deleteCustomer/:id", customerController.deleteCustomer);
 router.post("/addCar", customerController.addCustomerCar);

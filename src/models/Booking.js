@@ -3,45 +3,66 @@ const pool = require("../../db");
 class Booking {
 
     // Create booking
-    static async create(data) {
+    // static async create(data) {
 
+    //     const query = `
+    //         INSERT INTO booking (
+    //             id,
+    //             customer_id,
+    //             customer_car_id,
+    //             mileage,
+    //             services,
+    //             concerns,
+    //             comments,
+    //             city_id,
+    //             service_center_id,
+    //             service_date,
+    //             service_time,
+    //             booking_status_id,
+    //             created_at,
+    //             is_active,
+    //             is_deleted
+    //         )
+    //         VALUES (
+    //             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW(),true,false
+    //         )
+    //         RETURNING *
+    //     `;
+
+    //     const values = [
+    //         data.id,
+    //         data.customer_id,
+    //         data.customer_car_id,
+    //         data.mileage,
+    //         data.services,
+    //         data.concerns,
+    //         data.comments,
+    //         data.city_id,
+    //         data.service_center_id,
+    //         data.service_date,
+    //         data.service_time,
+    //         data.booking_status_id
+    //     ];
+
+    //     const result = await pool.query(query, values);
+    //     return result.rows[0];
+    // }
+    static async create(data) {
         const query = `
-            INSERT INTO booking (
-                id,
-                customer_id,
-                customer_car_id,
-                mileage,
-                services,
-                concerns,
-                comments,
-                city_id,
-                service_center_id,
-                service_date,
-                service_time,
-                booking_status_id,
-                created_at,
-                is_active,
-                is_deleted
+            INSERT INTO customers (
+                id, first_name, last_name, email, mobile, gender, created_at, is_active, is_deleted
             )
-            VALUES (
-                $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW(),true,false
-            )
+            VALUES ($1,$2,$3,$4,$5,$6,NOW(),true,false)
             RETURNING *
         `;
 
         const values = [
             data.id,
-            data.customer_id,
-            data.customer_car_id,
-            data.mileage,
-            data.services,
-            data.concerns,
-            data.comments,
-            data.city_id,
-            data.service_center_id,
-            data.service_date,
-            data.service_time,
-            data.booking_status_id
+            data.first_name,
+            data.last_name,
+            data.email,
+            data.mobile,
+            data.gender
         ];
 
         const result = await pool.query(query, values);

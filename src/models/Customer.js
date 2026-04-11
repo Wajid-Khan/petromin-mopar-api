@@ -3,6 +3,38 @@ const pool = require("../../db");
 class Customer {
 
     // Create customer
+    // static async create(data) {
+
+    //     const query = `
+    //         INSERT INTO customers (
+    //             id,
+    //             first_name,
+    //             last_name,
+    //             email,
+    //             mobile,
+    //             gender,
+    //             channel,
+    //             created_at,
+    //             is_active,
+    //             is_deleted
+    //         )
+    //         VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),true,false)
+    //         RETURNING *
+    //     `;
+
+    //     const values = [
+    //         data.id,
+    //         data.first_name,
+    //         data.last_name,
+    //         data.email,
+    //         data.mobile,
+    //         data.gender,
+    //         data.channel
+    //     ];
+
+    //     const result = await pool.query(query, values);
+    //     return result.rows[0];
+    // }
     static async create(data) {
 
         const query = `
@@ -26,10 +58,10 @@ class Customer {
             data.id,
             data.first_name,
             data.last_name,
-            data.email,
-            data.mobile,
+            data.email ? data.email.toLowerCase() : null,
+            data.mobile.trim(),
             data.gender,
-            data.channel
+            data.channel || 'web'
         ];
 
         const result = await pool.query(query, values);
@@ -229,6 +261,48 @@ class Customer {
         return result.rows[0];
     }
 
+    // static async addCustomerCar(data) {
+
+    //     const query = `
+    //         INSERT INTO customer_car (
+    //             id,
+    //             customer_id,
+    //             model_id,
+    //             brand_id,
+    //             variant_id,
+    //             year_id,
+    //             vehicle_number_plate,
+    //             vin,
+    //             created_at,
+    //             created_by,
+    //             is_active,
+    //             is_deleted
+    //         )
+    //         VALUES (
+    //             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
+    //         )
+    //         RETURNING *
+    //     `;
+
+    //     const values = [
+    //         data.id,
+    //         data.customer_id,
+    //         data.model_id,
+    //         data.brand_id,
+    //         data.variant_id,
+    //         data.year_id,
+    //         data.vehicle_number_plate,
+    //         data.vin,
+    //         data.created_at,
+    //         data.created_by,
+    //         true,
+    //         false
+    //     ];
+
+    //     const result = await pool.query(query, values);
+
+    //     return result.rows[0];
+    // }
     static async addCustomerCar(data) {
 
         const query = `
@@ -270,6 +344,46 @@ class Customer {
         const result = await pool.query(query, values);
 
         return result.rows[0];
+    }
+
+    static async getByCustomer(customer_id) {
+        const result = await pool.query(
+            `SELECT * FROM customer_car 
+            WHERE customer_id = $1 AND is_deleted = false`,
+            [customer_id]
+        );
+
+        return result.rows;
+    }
+
+    static async getCustomerCars(customerId) {
+        const query = `
+            SELECT 
+                cc.*,
+                vb.brand_name_en,
+                vm.model_name_en,
+                vv.variant_name_en,
+                vy.vehicle_year
+            FROM customer_car cc
+
+            LEFT JOIN vehicle_brand vb 
+                ON CAST(vb.brand_id AS TEXT) = CAST(cc.brand_id AS TEXT)
+
+            LEFT JOIN vehicle_model vm 
+                ON CAST(vm.model_id AS TEXT) = CAST(cc.model_id AS TEXT)
+
+            LEFT JOIN vehicle_variant vv 
+                ON CAST(vv.variant_id AS TEXT) = CAST(cc.variant_id AS TEXT)
+
+            LEFT JOIN vehicle_year vy 
+                ON CAST(vy.year_id AS TEXT) = CAST(cc.year_id AS TEXT)
+
+            WHERE CAST(cc.customer_id AS TEXT) = CAST($1 AS TEXT)
+            AND cc.is_deleted = false
+        `;
+
+        const result = await pool.query(query, [customerId]);
+        return result.rows;
     }
 
 }

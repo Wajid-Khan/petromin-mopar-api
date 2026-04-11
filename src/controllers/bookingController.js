@@ -2,16 +2,113 @@ const { v4: uuidv4 } = require("uuid");
 const Booking = require("../models/Booking");
 
 // Create booking
+// const createBooking = async (req, res) => {
+
+//     try {
+
+//         const data = {
+//             id: uuidv4(),
+//             ...req.body
+//         };
+
+//         const booking = await Booking.create(data);
+
+//         res.json({
+//             success: true,
+//             message: "Booking created successfully",
+//             data: booking
+//         });
+
+//     } catch (error) {
+
+//         console.error("Create booking error:", error);
+
+//         res.status(500).json({
+//             success: false,
+//             message: "Internal Server Error"
+//         });
+
+//     }
+
+// };
 const createBooking = async (req, res) => {
 
     try {
 
-        const data = {
+        let customer_id = req.body.customer_id;
+        let customer_car_id = req.body.customer_car_id;
+
+        // ================================
+        // ✅ CASE 1: NEW CUSTOMER
+        // ================================
+        if (!customer_id) {
+
+            const customerPayload = {
+                id: uuidv4(),
+                first_name: req.body.first_name,
+                last_name: req.body.last_name,
+                email: req.body.email,
+                mobile: req.body.mobile,
+                gender: req.body.gender
+            };
+
+            const customer = await Customer.create(customerPayload);
+            customer_id = customer.id;
+
+            const carPayload = {
+                id: uuidv4(),
+                customer_id,
+                model_id: req.body.model_id,
+                brand_id: req.body.brand_id,
+                variant_id: req.body.variant_id,
+                year_id: req.body.year_id,
+                vehicle_number_plate: req.body.vehicle_number_plate,
+                vin: req.body.vin
+            };
+
+            const car = await CustomerCar.create(carPayload);
+            customer_car_id = car.id;
+        }
+
+        // ================================
+        // ✅ CASE 2: EXISTING CUSTOMER - ADD NEW CAR
+        // ================================
+        if (customer_id && req.body.new_car) {
+
+            const carPayload = {
+                id: uuidv4(),
+                customer_id,
+                model_id: req.body.model_id,
+                brand_id: req.body.brand_id,
+                variant_id: req.body.variant_id,
+                year_id: req.body.year_id,
+                vehicle_number_plate: req.body.vehicle_number_plate,
+                vin: req.body.vin
+            };
+
+            const car = await CustomerCar.create(carPayload);
+            customer_car_id = car.id;
+        }
+
+        // ================================
+        // ✅ CREATE BOOKING (COMMON)
+        // ================================
+        const bookingPayload = {
             id: uuidv4(),
-            ...req.body
+            customer_id,
+            customer_car_id,
+            mileage: req.body.mileage,
+            services: req.body.services,
+            concerns: req.body.concerns,
+            comments: req.body.comments,
+            city_id: req.body.city_id,
+            service_center_id: req.body.service_center_id,
+            service_date: req.body.service_date,
+            service_time: req.body.service_time,
+            booking_status_id: req.body.booking_status_id || 1
         };
 
-        const booking = await Booking.create(data);
+        const booking = await Booking.create(bookingPayload);
 
         res.json({
             success: true,
@@ -27,9 +124,7 @@ const createBooking = async (req, res) => {
             success: false,
             message: "Internal Server Error"
         });
-
     }
-
 };
 
 // Get all bookings
