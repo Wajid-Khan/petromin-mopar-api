@@ -247,6 +247,114 @@ class LookUp {
         };
     }
 
+    static async getEngineSizes({
+        search = "",
+        model_id = null,
+        page = 1,
+        pageSize = 10
+    }) {
+
+        const offset = (page - 1) * pageSize;
+
+        let conditions = [];
+        let values = [];
+
+        if (search) {
+
+            values.push(`%${search}%`);
+
+            conditions.push(`
+                (
+                    es.engine_size ILIKE $${values.length}
+                    OR vm.model_name_en ILIKE $${values.length}
+                    OR vm.model_name_ar ILIKE $${values.length}
+                    OR vb.brand_name_en ILIKE $${values.length}
+                    OR vb.brand_name_ar ILIKE $${values.length}
+                )
+            `);
+
+        }
+
+        if (model_id) {
+
+            values.push(model_id);
+
+            conditions.push(`
+                es.model_id = $${values.length}
+            `);
+
+        }
+
+        const whereClause = conditions.length
+            ? `WHERE ${conditions.join(" AND ")}`
+            : "";
+
+        const query = `
+            SELECT
+                es.engine_size_id,
+                es.engine_size,
+
+                vm.model_id,
+                vm.model_name_en,
+                vm.model_name_ar,
+
+                vb.brand_id,
+                vb.brand_name_en,
+                vb.brand_name_ar
+
+            FROM vehicle_engine_size es
+
+            INNER JOIN vehicle_model vm
+                ON es.model_id = vm.model_id
+
+            INNER JOIN vehicle_brand vb
+                ON vm.brand_id = vb.brand_id
+
+            ${whereClause}
+
+            ORDER BY
+                vb.brand_name_en,
+                vm.model_name_en,
+                es.engine_size
+
+            LIMIT $${values.length + 1}
+            OFFSET $${values.length + 2}
+        `;
+
+        values.push(pageSize);
+        values.push(offset);
+
+        const result = await pool.query(query, values);
+
+        const countQuery = `
+            SELECT COUNT(*)
+
+            FROM vehicle_engine_size es
+
+            INNER JOIN vehicle_model vm
+                ON es.model_id = vm.model_id
+
+            INNER JOIN vehicle_brand vb
+                ON vm.brand_id = vb.brand_id
+
+            ${whereClause}
+        `;
+
+        const countValues = values.slice(0, values.length - 2);
+
+        const countResult = await pool.query(
+            countQuery,
+            countValues
+        );
+
+        return {
+            data: result.rows,
+            total: parseInt(countResult.rows[0].count),
+            page,
+            pageSize
+        };
+    }
+
 }
 
 module.exports = LookUp;

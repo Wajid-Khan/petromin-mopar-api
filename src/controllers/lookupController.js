@@ -175,10 +175,48 @@ const getVehicleServices = async (req, res) => {
 
 };
 
+const getEngineSizes = async (req, res) => {
+
+    try {
+
+        const search = req.query.search || "";
+        const model_id = req.query.model_id || null;
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+
+        const result = await LookUp.getEngineSizes({
+            search,
+            model_id,
+            page,
+            pageSize
+        });
+
+        res.json({
+            success: true,
+            total: result.total,
+            page: result.page,
+            pageSize: result.pageSize,
+            data: result.data
+        });
+
+    } catch (error) {
+
+        console.error("Engine size lookup error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+
+    }
+
+};
+
 module.exports = {
     getCities,
     getTimeslots,
     getBookingStatus,
     getVehicleConcerns,
-    getVehicleServices
+    getVehicleServices,
+    getEngineSizes
 }
