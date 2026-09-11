@@ -207,6 +207,42 @@ const getEngineSizes = async (req, res) => {
             success: false,
             message: "Internal Server Error"
         });
+    }
+};
+
+const getPerformanceAccessoryCategories = async (req, res) => {
+
+    try {
+
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+
+        const result = await LookUp.getPerformanceAccessoryCategories({
+            search,
+            page,
+            pageSize
+        });
+
+        res.json({
+            success: true,
+            total: result.total,
+            page: result.page,
+            pageSize: result.pageSize,
+            data: result.data
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Performance accessory category lookup error:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
 
     }
 
@@ -218,5 +254,6 @@ module.exports = {
     getBookingStatus,
     getVehicleConcerns,
     getVehicleServices,
-    getEngineSizes
+    getEngineSizes,
+    getPerformanceAccessoryCategories
 }

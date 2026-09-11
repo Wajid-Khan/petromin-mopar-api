@@ -9,5 +9,6 @@ router.get("/booking-status", lookupController.getBookingStatus);
 router.get("/vehicle-concerns", lookupController.getVehicleConcerns);
 router.get("/vehicle-services", lookupController.getVehicleServices);
 router.get("/engine-sizes", lookupController.getEngineSizes);
+router.get("/performance-accessory-categories", lookupController.getPerformanceAccessoryCategories);
 
 module.exports = router;

@@ -355,6 +355,72 @@ class LookUp {
         };
     }
 
+    static async getPerformanceAccessoryCategories({
+        search = "",
+        page = 1,
+        pageSize = 10
+    }) {
+
+        const offset = (page - 1) * pageSize;
+
+        let conditions = [];
+        let values = [];
+
+        if (search) {
+
+            values.push(`%${search}%`);
+
+            conditions.push(`
+                (
+                    pa_category_name_en ILIKE $${values.length}
+                    OR pa_category_name_ar ILIKE $${values.length}
+                )
+            `);
+
+        }
+
+        const whereClause = conditions.length
+            ? `WHERE ${conditions.join(" AND ")}`
+            : "";
+
+        const query = `
+            SELECT
+                pa_category_id,
+                pa_category_name_en,
+                pa_category_name_ar
+            FROM lookup_performance_accessory_categories
+            ${whereClause}
+            ORDER BY pa_category_name_en
+            LIMIT $${values.length + 1}
+            OFFSET $${values.length + 2}
+        `;
+
+        values.push(pageSize);
+        values.push(offset);
+
+        const result = await pool.query(query, values);
+
+        const countQuery = `
+            SELECT COUNT(*)
+            FROM lookup_performance_accessory_categories
+            ${whereClause}
+        `;
+
+        const countValues = values.slice(0, values.length - 2);
+
+        const countResult = await pool.query(
+            countQuery,
+            countValues
+        );
+
+        return {
+            data: result.rows,
+            total: parseInt(countResult.rows[0].count),
+            page,
+            pageSize
+        };
+    }
+
 }
 
 module.exports = LookUp;
