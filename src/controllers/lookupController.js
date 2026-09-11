@@ -243,6 +243,72 @@ const getPerformanceAccessoryCategories = async (req, res) => {
             success: false,
             message: "Internal Server Error"
         });
+    }
+};
+
+const getSegments = async (req, res) => {
+
+    try {
+
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+
+        const result = await LookUp.getSegments({
+            search,
+            page,
+            pageSize
+        });
+
+        res.json({
+            success: true,
+            total: result.total,
+            page: result.page,
+            pageSize: result.pageSize,
+            data: result.data
+        });
+
+    } catch (error) {
+
+        console.error("Segments lookup error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+const getBusinessLines = async (req, res) => {
+
+    try {
+
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+
+        const result = await LookUp.getBusinessLines({
+            search,
+            page,
+            pageSize
+        });
+
+        res.json({
+            success: true,
+            total: result.total,
+            page: result.page,
+            pageSize: result.pageSize,
+            data: result.data
+        });
+
+    } catch (error) {
+
+        console.error("Business line lookup error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
 
     }
 
@@ -255,5 +321,7 @@ module.exports = {
     getVehicleConcerns,
     getVehicleServices,
     getEngineSizes,
-    getPerformanceAccessoryCategories
+    getPerformanceAccessoryCategories,
+    getSegments,
+    getBusinessLines
 }

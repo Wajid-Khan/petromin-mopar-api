@@ -10,5 +10,7 @@ router.get("/vehicle-concerns", lookupController.getVehicleConcerns);
 router.get("/vehicle-services", lookupController.getVehicleServices);
 router.get("/engine-sizes", lookupController.getEngineSizes);
 router.get("/performance-accessory-categories", lookupController.getPerformanceAccessoryCategories);
+router.get("/segments", lookupController.getSegments);
+router.get("/business-lines", lookupController.getBusinessLines);
 
 module.exports = router;
