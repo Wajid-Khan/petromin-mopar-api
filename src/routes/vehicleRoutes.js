@@ -11,5 +11,6 @@ router.get("/model/:id", vehicleController.getModelById);
 router.get("/variant/:id", vehicleController.getVariantById);
 router.get("/concerns", vehicleController.getConcerns);
 router.get("/services", vehicleController.getServices);
+router.get("/centers", vehicleController.getCenters);
 
 module.exports = router;

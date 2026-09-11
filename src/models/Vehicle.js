@@ -315,6 +315,22 @@ class Vehicle {
         return result.rows;
     }
 
+    static async getCenters() {
+        const query = `
+            SELECT 
+                id,
+                dealer_name_en,
+                city_en,
+                latitude,
+                longitude
+            FROM public.centers
+            ORDER BY id ASC
+        `;
+
+        const result = await pool.query(query);
+        return result.rows;
+    }
+
 }
 
 module.exports = Vehicle;

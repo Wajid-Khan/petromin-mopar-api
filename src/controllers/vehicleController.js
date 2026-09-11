@@ -259,6 +259,27 @@ const getServices = async (req, res) => {
     }
 };
 
+const getCenters = async (req, res) => {
+    try {
+
+        const result = await Vehicle.getCenters();
+
+        res.json({
+            success: true,
+            data: result
+        });
+
+    } catch (error) {
+
+        console.error("Centers error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 module.exports = {
     getBrands,
     getModels,
@@ -267,5 +288,6 @@ module.exports = {
     getModelById,
     getVariantById,
     getConcerns,
-    getServices
+    getServices,
+    getCenters
 }

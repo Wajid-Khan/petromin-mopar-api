@@ -34,7 +34,7 @@ const Booking = require("../models/Booking");
 const createBooking = async (req, res) => {
 
     try {
-
+        console.log("req.body: ", req.body); return;
         let customer_id = req.body.customer_id;
         let customer_car_id = req.body.customer_car_id;
 

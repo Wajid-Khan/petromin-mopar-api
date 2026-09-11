@@ -6,7 +6,7 @@ class User {
         const query = `
             SELECT *
             FROM employees
-            WHERE username = $1 AND is_delete = FALSE AND is_active = TRUE
+            WHERE username = $1 AND is_deleted = FALSE AND is_active = TRUE
             LIMIT 1
         `;
 
