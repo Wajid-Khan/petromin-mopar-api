@@ -6,21 +6,123 @@ class Product {
     // 🔹 PARTS
     // ============================
 
-    static async getParts({ page = 1, pageSize = 10 }) {
+    static async getParts({
+        page = 1,
+        pageSize = 10,
+        search = ""
+    }) {
 
         const offset = (page - 1) * pageSize;
+        const searchValue = `%${search}%`;
 
-        const result = await pool.query(`
-            SELECT * FROM parts
-            ORDER BY created_at DESC
-            LIMIT $1 OFFSET $2
-        `, [pageSize, offset]);
+        const query = `
+            SELECT
+                p.part_id,
+                p.part_number,
 
-        const count = await pool.query(`SELECT COUNT(*) FROM parts`);
+                p.description_en,
+                p.description_ar,
+
+                -- Segment
+                p.segment_id,
+                s.segment_name_en,
+                s.segment_name_ar,
+
+                -- Business Line
+                p.business_line_id,
+                bl.business_line_name_en,
+                bl.business_line_name_ar,
+
+                p.sales_code,
+
+                p.retail_price_without_vat,
+                p.price_with_vat,
+
+                p.brand_logo,
+
+                p.part_grid_img,
+                p.part_details_imgs,
+
+                p.vehicle_fitment,
+
+                p.created_at,
+                p.updated_at
+
+            FROM public.parts p
+
+            LEFT JOIN public.lookup_segments s
+                ON p.segment_id = s.segment_id
+
+            LEFT JOIN public.lookup_business_lines bl
+                ON p.business_line_id = bl.business_line_id
+
+            WHERE
+                $1 = ''
+                OR p.part_number ILIKE $2
+                OR p.description_en ILIKE $2
+                OR p.description_ar ILIKE $2
+                OR p.sales_code ILIKE $2
+
+                OR s.segment_name_en ILIKE $2
+                OR s.segment_name_ar ILIKE $2
+
+                OR bl.business_line_name_en ILIKE $2
+                OR bl.business_line_name_ar ILIKE $2
+
+            ORDER BY p.created_at DESC
+
+            LIMIT $3
+            OFFSET $4
+        `;
+
+        const result = await pool.query(
+            query,
+            [
+                search,
+                searchValue,
+                pageSize,
+                offset
+            ]
+        );
+
+
+        // Count filtered records
+        const countQuery = `
+            SELECT COUNT(*) AS total
+
+            FROM public.parts p
+
+            LEFT JOIN public.lookup_segments s
+                ON p.segment_id = s.segment_id
+
+            LEFT JOIN public.lookup_business_lines bl
+                ON p.business_line_id = bl.business_line_id
+
+            WHERE
+                $1 = ''
+                OR p.part_number ILIKE $2
+                OR p.description_en ILIKE $2
+                OR p.description_ar ILIKE $2
+                OR p.sales_code ILIKE $2
+
+                OR s.segment_name_en ILIKE $2
+                OR s.segment_name_ar ILIKE $2
+
+                OR bl.business_line_name_en ILIKE $2
+                OR bl.business_line_name_ar ILIKE $2
+        `;
+
+        const countResult = await pool.query(
+            countQuery,
+            [
+                search,
+                searchValue
+            ]
+        );
 
         return {
             data: result.rows,
-            total: parseInt(count.rows[0].count),
+            total: parseInt(countResult.rows[0].total, 10),
             page,
             pageSize
         };
@@ -106,21 +208,161 @@ class Product {
     // 🔹 ACCESSORIES
     // ============================
 
-    static async getAccessories({ page = 1, pageSize = 10 }) {
+    static async getAccessories({
+        page = 1,
+        pageSize = 10,
+        search = ""
+    }) {
 
         const offset = (page - 1) * pageSize;
 
-        const result = await pool.query(`
-            SELECT * FROM accessories
-            ORDER BY created_at DESC
-            LIMIT $1 OFFSET $2
-        `, [pageSize, offset]);
+        const searchValue = `%${search}%`;
 
-        const count = await pool.query(`SELECT COUNT(*) FROM accessories`);
+        const query = `
+            SELECT
+                a.accessory_id,
+                a.part_number,
+                a.petromin_mopar_part_number,
+
+                -- Brand
+                a.brand_id,
+                vb.brand_name_en,
+                vb.brand_name_ar,
+
+                -- Model
+                a.model_id,
+                vm.model_name_en,
+                vm.model_name_ar,
+
+                -- Category
+                a.pa_category_id,
+                pac.pa_category_name_en,
+                pac.pa_category_name_ar,
+
+                -- Segment
+                a.segment_id,
+                s.segment_name_en,
+                s.segment_name_ar,
+
+                -- Product
+                a.product_name_en,
+                a.product_name_ar,
+                a.description_en,
+                a.description_ar,
+
+                a.price_with_vat,
+                a.brand_logo,
+                a.part_grid_img,
+                a.part_details_imgs,
+                a.vehicle_fitment,
+
+                a.created_at,
+                a.updated_at
+
+            FROM public.accessories a
+
+            LEFT JOIN public.vehicle_brand vb
+                ON a.brand_id = vb.brand_id
+
+            LEFT JOIN public.vehicle_model vm
+                ON a.model_id = vm.model_id
+
+            LEFT JOIN public.lookup_performance_accessory_categories pac
+                ON a.pa_category_id = pac.pa_category_id
+
+            LEFT JOIN public.lookup_segments s
+                ON a.segment_id = s.segment_id
+
+            WHERE
+                $1 = ''
+                OR
+                a.part_number ILIKE $2
+                OR a.petromin_mopar_part_number ILIKE $2
+                OR a.product_name_en ILIKE $2
+                OR a.product_name_ar ILIKE $2
+                OR a.description_en ILIKE $2
+                OR a.description_ar ILIKE $2
+
+                OR vb.brand_name_en ILIKE $2
+                OR vb.brand_name_ar ILIKE $2
+
+                OR vm.model_name_en ILIKE $2
+                OR vm.model_name_ar ILIKE $2
+
+                OR pac.pa_category_name_en ILIKE $2
+                OR pac.pa_category_name_ar ILIKE $2
+
+                OR s.segment_name_en ILIKE $2
+                OR s.segment_name_ar ILIKE $2
+
+            ORDER BY a.created_at DESC
+
+            LIMIT $3 OFFSET $4
+        `;
+
+        const result = await pool.query(
+            query,
+            [
+                search,
+                searchValue,
+                pageSize,
+                offset
+            ]
+        );
+
+
+        // Count filtered records
+        const countQuery = `
+            SELECT COUNT(*) AS total
+
+            FROM public.accessories a
+
+            LEFT JOIN public.vehicle_brand vb
+                ON a.brand_id = vb.brand_id
+
+            LEFT JOIN public.vehicle_model vm
+                ON a.model_id = vm.model_id
+
+            LEFT JOIN public.lookup_performance_accessory_categories pac
+                ON a.pa_category_id = pac.pa_category_id
+
+            LEFT JOIN public.lookup_segments s
+                ON a.segment_id = s.segment_id
+
+            WHERE
+                $1 = ''
+                OR
+                a.part_number ILIKE $2
+                OR a.petromin_mopar_part_number ILIKE $2
+                OR a.product_name_en ILIKE $2
+                OR a.product_name_ar ILIKE $2
+                OR a.description_en ILIKE $2
+                OR a.description_ar ILIKE $2
+
+                OR vb.brand_name_en ILIKE $2
+                OR vb.brand_name_ar ILIKE $2
+
+                OR vm.model_name_en ILIKE $2
+                OR vm.model_name_ar ILIKE $2
+
+                OR pac.pa_category_name_en ILIKE $2
+                OR pac.pa_category_name_ar ILIKE $2
+
+                OR s.segment_name_en ILIKE $2
+                OR s.segment_name_ar ILIKE $2
+        `;
+
+        const countResult = await pool.query(
+            countQuery,
+            [
+                search,
+                searchValue
+            ]
+        );
 
         return {
             data: result.rows,
-            total: parseInt(count.rows[0].count),
+            total: parseInt(countResult.rows[0].total, 10),
             page,
             pageSize
         };

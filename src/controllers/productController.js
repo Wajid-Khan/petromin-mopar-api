@@ -9,11 +9,15 @@ const Product = require("../models/Product");
 // Get all parts
 const getParts = async (req, res) => {
     try {
-
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
+        const search = req.query.search?.trim() || "";
 
-        const result = await Product.getParts({ page, pageSize });
+        const result = await Product.getParts({
+            page,
+            pageSize,
+            search
+        });
 
         res.json({
             success: true,
@@ -161,11 +165,15 @@ const deletePart = async (req, res) => {
 // Get all accessories
 const getAccessories = async (req, res) => {
     try {
-
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
+        const search = req.query.search?.trim() || "";
 
-        const result = await Product.getAccessories({ page, pageSize });
+        const result = await Product.getAccessories({
+            page,
+            pageSize,
+            search
+        });
 
         res.json({
             success: true,
@@ -177,7 +185,8 @@ const getAccessories = async (req, res) => {
         console.error("Get accessories error:", error);
 
         res.status(500).json({
-            success: false
+            success: false,
+            message: "Failed to fetch accessories"
         });
     }
 };
